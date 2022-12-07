@@ -15,7 +15,8 @@ const interval = new Interval({
   apiKey: process.env.INTERVAL_KEY,
   actions: {
     weekly_dashboard: {
-			handler: async () => {
+      handler: async () => {
+        // Get data from plausible.io
         const response = await axios.get(baseUrl + 'timeseries', {
           params: {
             site_id: siteId,
@@ -45,15 +46,15 @@ const interval = new Interval({
         });
 
         // Summarize data by week + sum visitors and average bounce rate
-				const groupedData = nest()
-														.key((d: typeof data) => { return formatJSDate(d.date); })
-														// @ts-ignore
-														.rollup((v) => { return {
-															visitors: sum(v, (d: typeof data) => { return d.visitors; }),
-															bounce_rate: mean(v, (d: typeof data) => { return d.bounce_rate; })
-														}; })
+        const groupedData = nest()
+                            .key((d: typeof data) => { return formatJSDate(d.date); })
+                            // @ts-ignore
+                            .rollup((v) => { return {
+                              visitors: sum(v, (d: typeof data) => { return d.visitors; }),
+                              bounce_rate: mean(v, (d: typeof data) => { return d.bounce_rate; })
+                            }; })
                             .sortKeys(descending)
-														.entries(data);
+                            .entries(data);
 
         // Change data back to array of objects
         let formattedData = [];
@@ -66,13 +67,13 @@ const interval = new Interval({
             bounce_rate: object['value']['bounce_rate'],
           });
         });
-				// console.log(formattedData);
 
+        // Display data in Interval
         await io.display.table('Web traffic data', {
           helpText: 'Data from plausible.io.',
           data: formattedData,
         });
-			},
+      },
       name: 'Weekly dashboard',
     }
   },
